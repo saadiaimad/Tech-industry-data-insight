@@ -1,0 +1,64 @@
+---
+title: "Employment in the tech sector"
+output: html_document 
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+This document represents a brief insight of the Tech sector employment trends. The data I have used is publicly available at labor market information portal. 
+
+Labor market portal has data related to different industries. I have picked up information media and telecommunications to get some insights of the tech sector.
+
+```{r }
+data_url <- "https://lmip.gov.au/PortalFile.axd?FieldID=3195450&.xlsx"
+temp = tempfile(fileext = ".xlsx")
+download.file(data_url, destfile=temp, mode='wb')
+test <- readxl::read_excel(temp, sheet =2)
+
+# extracting Tech data from table
+tech_data <- test[test$Industry=="Information Media and Telecommunications",c(1,2,4,5,6,7,8,9,10 )]
+```
+
+#### Five year growth in tech industry w.r.t state/territory 
+I have created a plot which shows five year growth in tech sector in each state and overall total growth in Australia.
+
+
+```{r Five year growth in tech industry w.r.t state/territory }
+
+tech_industry_Growth <- aggregate(tech_data$`Five year growth by Industry` ~ tech_data$`State/Territory`,FUN = sum)
+colnames(tech_industry_Growth) <- c("State" , "Growth")
+tech_industry_Growth
+
+tech_industry_Growth %>%
+  ggplot(aes(x = State, y=Growth)) +
+           geom_col(aes(fill = State))+ 
+           labs(title = "Five year growth in tech industry", x="State",y="Five year growth")
+          
+
+```
+
+If we look at the graph of five years growth we can clearly see that except VIC, NT and NSW/ACT all states show decline in growth. NSW and QLD show largest decline among the states.
+
+#### Male and Female in Tech Industry
+
+I have created another plot which shows number of male and female working in tech sector in each state and overall Australia.
+
+
+```{r Male and Female in Tech Industry}
+
+tech_people <- aggregate(cbind(tech_data$`Employed - Male`,tech_data$`Employed - Female`) ~ tech_data$`State/Territory`,FUN = sum)
+colnames(tech_people)<-c("State","Male","Female")
+tech_people
+
+tech_people %>%
+  ggplot(aes(x = State)) +
+      geom_col(aes(y = Male), width = 0.25,fill="blue",position = position_nudge(x =-0.125))+
+      geom_col(aes(y = Female ) ,width = 0.25, fill="red",position =position_nudge(x=0.125))+          labs(title = "Male and Female in Tech Industry",x="States",y="total number")
+```
+
+Blue represents male population while red represents female  population.
+
